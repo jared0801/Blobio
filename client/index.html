@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="client/css/styles.css">
+    <title>Agar thing</title>
+</head>
+<body>
+    <h1>Hello world agar</h1>
+
+    <div id="signDiv">
+        <label for="signDiv-name">Enter a name to get started!</label>
+        <br>
+        <input id="signDiv-name" type="text">
+        <button id="signDiv-signIn">Start!</button>
+    </div>
+
+    <div id="gameDiv" style="opacity: 0.3">
+        <div id="chatText" style="width: 800px; height: 100px; overflow-y: scroll">
+            <div>Hello!</div>
+        </div>
+    
+        <form id="chatForm">
+            <input id="chatInput" type="text" style="width: 800px">
+        </form>
+    </div>
+    
+</body>
+</html>
+
+<script src="/client/js/lib/socket.min.js"></script>
+<script src="/client/js/lib/pixi.min.js"></script>
+<script type="module" src="/client/js/app.js"></script>

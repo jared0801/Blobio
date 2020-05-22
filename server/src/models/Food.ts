@@ -1,6 +1,9 @@
-import { Entity } from './Entity';
-import { Player, PlayerDto } from './Player';
-import { Enemy, EnemyDto } from './Enemy';
+import { Entity, EntitySprite } from './Entity';
+import { Player } from './Player';
+import { Enemy } from './Enemy';
+
+const MAP_W = 4008;
+const MAP_H = 4008;
 
 export class Food extends Entity {
     static list: Map<string, Food> = new Map();
@@ -9,26 +12,20 @@ export class Food extends Entity {
         super(params);
 
         this.mass = 1;
-        this.id = '' + Math.random();
+        //this.id = '' + Math.random();
         Food.list.set(this.id, this);
         Entity.initPack.food.push(this.getInitPack());
     }
 
     static allInitPacks(): FoodDto[] {
         let food = [];
-        for(let [id, p] of Food.list) {
-            food.push(p.getInitPack());
+        for(let [id, f] of Food.list) {
+            food.push(f.getInitPack());
         }
         return food;
     }
 
     static allUpdatePacks(): FoodDto[] {
-        if(Math.random() < 0.1 && Food.list.size < 100) {
-            Food.spawnRandomFood();
-        } else if(Math.random() < 0.01 && Food.list.size < 500) {
-            Food.spawnRandomFood();
-        }
-
         let pack: FoodDto[] = [];
         Food.list.forEach((food: Food) => {
             if(food) {
@@ -41,43 +38,51 @@ export class Food extends Entity {
     }
 
     static spawnRandomFood() {
-        new Food({x: Math.floor(Math.random() * 3008), y: Math.floor(Math.random() * 3008)});
+        new Food({x: Math.floor(Math.random() * MAP_W), y: Math.floor(Math.random() * MAP_H)});
     }
 
     getInitPack() {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y
+            sprites: this.sprites
         }
     }
 
     getUpdatePack() {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y
+            sprites: this.sprites
         }
     }
 
+    getSprite() {
+        return this.sprites[0];
+    }
+
     update() {
-        Player.list.forEach((player: PlayerDto) => {
-            if(this.getDistance(player.x, player.y) < player.radius) {
-                player.mass++;
-                player.radius++;
-                Food.list.delete(this.id);
-                Entity.removePack.food.push(this.id);
-            }
+        Player.list.forEach((player: Player) => {
+            player.sprites.forEach(pSprite => {
+                if(this.getDistance(this.getSprite(), pSprite.x, pSprite.y) < pSprite.radius) {
+                    pSprite.mass++;
+                    pSprite.radius++;
+                    if(Food.list.delete(this.id)) {
+                        Entity.removePack.food.push(this.id);
+                    }
+                }
+            });
         });
 
         
-        Enemy.list.forEach((enemy: EnemyDto) => {
-            if(this.getDistance(enemy.x, enemy.y) < enemy.radius) {
-                enemy.mass++;
-                enemy.radius++;
-                Food.list.delete(this.id);
-                Entity.removePack.food.push(this.id);
-            }
+        Enemy.list.forEach((enemy: Enemy) => {
+            enemy.sprites.forEach(eSprite => {
+                if(this.getDistance(this.getSprite(), eSprite.x, eSprite.y) < eSprite.radius) {
+                    eSprite.mass++;
+                    eSprite.radius++;
+                    if(Food.list.delete(this.id)) {
+                        Entity.removePack.food.push(this.id);
+                    }
+                }
+            });
         })
     }
 
@@ -85,6 +90,5 @@ export class Food extends Entity {
 
 export interface FoodDto {
     id: string,
-    x: number,
-    y: number
+    sprites: EntitySprite[]//Map<string, EntitySprite>
 }

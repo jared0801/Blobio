@@ -43,12 +43,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Entity_1 = require("./Entity");
 var Player_1 = require("./Player");
 var Enemy_1 = require("./Enemy");
+var MAP_W = 4008;
+var MAP_H = 4008;
 var Food = /** @class */ (function (_super) {
     __extends(Food, _super);
     function Food(params) {
         var _this = _super.call(this, params) || this;
         _this.mass = 1;
-        _this.id = '' + Math.random();
+        //this.id = '' + Math.random();
         Food.list.set(_this.id, _this);
         Entity_1.Entity.initPack.food.push(_this.getInitPack());
         return _this;
@@ -58,8 +60,8 @@ var Food = /** @class */ (function (_super) {
         var food = [];
         try {
             for (var _b = __values(Food.list), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), id = _d[0], p = _d[1];
-                food.push(p.getInitPack());
+                var _d = __read(_c.value, 2), id = _d[0], f = _d[1];
+                food.push(f.getInitPack());
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -72,12 +74,6 @@ var Food = /** @class */ (function (_super) {
         return food;
     };
     Food.allUpdatePacks = function () {
-        if (Math.random() < 0.1 && Food.list.size < 100) {
-            Food.spawnRandomFood();
-        }
-        else if (Math.random() < 0.01 && Food.list.size < 500) {
-            Food.spawnRandomFood();
-        }
         var pack = [];
         Food.list.forEach(function (food) {
             if (food) {
@@ -88,39 +84,46 @@ var Food = /** @class */ (function (_super) {
         return pack;
     };
     Food.spawnRandomFood = function () {
-        new Food({ x: Math.floor(Math.random() * 3008), y: Math.floor(Math.random() * 3008) });
+        new Food({ x: Math.floor(Math.random() * MAP_W), y: Math.floor(Math.random() * MAP_H) });
     };
     Food.prototype.getInitPack = function () {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y
+            sprites: this.sprites
         };
     };
     Food.prototype.getUpdatePack = function () {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y
+            sprites: this.sprites
         };
+    };
+    Food.prototype.getSprite = function () {
+        return this.sprites[0];
     };
     Food.prototype.update = function () {
         var _this = this;
         Player_1.Player.list.forEach(function (player) {
-            if (_this.getDistance(player.x, player.y) < player.radius) {
-                player.mass++;
-                player.radius++;
-                Food.list.delete(_this.id);
-                Entity_1.Entity.removePack.food.push(_this.id);
-            }
+            player.sprites.forEach(function (pSprite) {
+                if (_this.getDistance(_this.getSprite(), pSprite.x, pSprite.y) < pSprite.radius) {
+                    pSprite.mass++;
+                    pSprite.radius++;
+                    if (Food.list.delete(_this.id)) {
+                        Entity_1.Entity.removePack.food.push(_this.id);
+                    }
+                }
+            });
         });
         Enemy_1.Enemy.list.forEach(function (enemy) {
-            if (_this.getDistance(enemy.x, enemy.y) < enemy.radius) {
-                enemy.mass++;
-                enemy.radius++;
-                Food.list.delete(_this.id);
-                Entity_1.Entity.removePack.food.push(_this.id);
-            }
+            enemy.sprites.forEach(function (eSprite) {
+                if (_this.getDistance(_this.getSprite(), eSprite.x, eSprite.y) < eSprite.radius) {
+                    eSprite.mass++;
+                    eSprite.radius++;
+                    if (Food.list.delete(_this.id)) {
+                        Entity_1.Entity.removePack.food.push(_this.id);
+                    }
+                }
+            });
         });
     };
     Food.list = new Map();

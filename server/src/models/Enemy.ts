@@ -1,39 +1,34 @@
-import { Entity } from './Entity';
+import { Entity, EntitySprite } from './Entity';
 import { Player } from './Player';
 import { Food } from './Food';
 import path from 'path';
 import fs from 'fs';
 
+const MAP_W = 4008;
+const MAP_H = 4008;
+
 let text = fs.readFileSync(path.join(__dirname, "../../names.txt"), "utf-8");
-let botNames = text.split("\n")
-
-const MAP_W: number = 3008;
-const MAP_H: number = 3008;
-
-let update_count = 0;
+let botNames = text.split("\n");
 
 export class Enemy extends Entity {
     static list: Map<string, Enemy> = new Map();
-    mass: number;
     name: string;
     sight: number;
+    inDanger: boolean;
+    wandering: number;
     constructor(params: any) {
         super(params);
 
-        this.mass = 1;
-        this.radius = 32;
+        // this.radius = 32;
         this.sight = 500;
+        this.inDanger = false;
+        this.wandering = 0;
 
         let name;
         do {
             name = botNames[Math.floor(Math.random() * botNames.length)];
         } while(Enemy.isNameTaken(name))
         this.name = name;
-
-        this.dirX = Math.random();
-        this.dirY = Math.random();
-
-        this.id = '' + Math.random();
         
         Enemy.list.set(this.id, this);
         Entity.initPack.enemy.push(this.getInitPack());
@@ -46,48 +41,20 @@ export class Enemy extends Entity {
         return false;
     }
 
-    static onConnect(name: string) {
-        const newEnemy: Enemy = new Enemy({
-            name,
+    static onConnect() {
+        new Enemy({
+            radius: 32,
             x: Math.random() * MAP_W,
             y: Math.random() * MAP_H
         });
         
-        /*newEnemy.socket.on('mouseMove', (data: { x: number; y: number; }) => {
-
-            let dirX = data.x - newEnemy.x;
-            let dirY = data.y - newEnemy.y;
-            //newEnemy.targetX = data.x;
-            //newEnemy.targetY = data.y;
-    
-            let len = Math.sqrt(dirX * dirX + dirY * dirY);
-            if(len < 1) {
-                dirX = 0;
-                dirY = 0;
-            } else {
-                dirX /= len;
-                dirY /= len;
-            }
-    
-            newEnemy.dirX = dirX;
-            newEnemy.dirY = dirY;
-        });*/
-
-        
-        
-    }
-
-    static onDisconnect(id: string) {
-        if(Enemy.list.delete(id)) {
-            Entity.removePack.enemy.push(id);
-        }
     }
 
     static allInitPacks() {
-        let enemies = [];
-        for(let [id, e] of Enemy.list) {
-            enemies.push(e.getInitPack());
-        }
+        let enemies: EnemyDto[] = [];
+        Enemy.list.forEach((enemy: Enemy) => {
+            enemies.push(enemy.getInitPack());
+        })
         return enemies;
     }
 
@@ -103,169 +70,216 @@ export class Enemy extends Entity {
         return pack;
     }
 
+    /**
+     * Finds the coordinates for the center of all this enemies sprites
+     * @function getSpriteCenter
+     * @return { x: number, y: number }
+     */
+    getSpriteCenter() {
+        let x = 0;
+        let y = 0;
+        this.sprites.forEach(sprite => {
+            x += sprite.x;
+            y += sprite.y;
+        });
+        x /= this.sprites.length;
+        y /= this.sprites.length;
+        return {
+            x,
+            y
+        }
+    }
+
     
+    destroySprite(p: EntitySprite) {
+        let index = this.sprites.indexOf(p);
+        this.sprites.splice(index, 1);
+    }
 
     respawn() {
-        this.x = Math.random() * MAP_W;
-        this.y = Math.random() * MAP_H;
-        this.radius = 32;
-        this.mass = 1;
+        if(Enemy.list.delete(this.id)) {
+            Entity.removePack.enemy.push(this.id);
+        }
     }
 
     getUpdatePack() {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y,
-            mass: this.mass,
-            radius: this.radius,
+            sprites: this.sprites
         }
     }
 
     getInitPack() {
         return {
             id: this.id,
-            x: this.x,
-            y: this.y,
-            radius: this.radius,
-            mass: this.mass,
+            sprites: this.sprites,
             name: this.name
         }
     }
 
-    private calculateSpeed() {
-        return this.maxSpd - Math.log10(this.mass);
+    private calculateSpeed(mass: number): number {
+        return this.maxSpd - Math.log10(mass);
     }
 
-    dirTowards(x: number, y: number): { x: number, y: number } {
-        let dirX = x - this.x;
-        let dirY = y - this.y;
-        let len = Math.sqrt(dirX * dirX + dirY * dirY);
-        if(len < 1) {
-            dirX = 0;
-            dirY = 0;
-        } else {
-            dirX /= len;
-            dirY /= len;
-        }
-        return { x: dirX, y: dirY };
+    splitPlayer() {
+
+        let largest: EntitySprite = this.createSprite(this.id);
+        largest.mass = 0;
+
+        this.sprites.forEach(p => {
+            if(p.mass >= largest.mass) largest = p;
+        });
+
+        if(largest.mass < 20) return;
+
+        const x = largest.x + largest.dirX * Math.random() * 50 + 10;
+        const y = largest.y + largest.dirY * Math.random() * 50 + 10;
+        
+        const portion = Math.random() * 0.5 + 0.25;
+        const radius = Math.max(1, Math.floor(largest.radius * portion));
+        largest.radius = Math.max(1, largest.radius - radius);
+        const mass = Math.max(1, Math.floor(largest.mass * portion));
+        largest.mass = Math.max(1, largest.mass - mass);
+        const curSpd = Math.random() * 8 + 2;
+        const newOne: EntitySprite = this.createSprite(this.id, x, y, mass, radius, curSpd);
+
+        this.sprites.push(newOne);
     }
 
     
     update() {
-        //this.updatePosition();
-        update_count++;
-        let danger: boolean = false;
-
-        this.curSpd = this.calculateSpeed();
-        Player.list.forEach((player: Player) => {
-            // Handle collision with player
-            if(this.getDistance(player.x, player.y) < player.radius + this.radius && Math.abs(this.mass - player.mass) > 4) {
-                if(this.mass >= player.mass * 1.25) {
-                    this.radius += player.mass;
-                    this.mass += player.mass;
-                    player.respawn();
-                } else if(player.mass >= this.mass * 1.25) {
-                    player.radius += this.mass;
-                    player.mass += this.mass;
-                    this.respawn();
-                }
-            }
-
-
-            // Choose direction based on distance to players
-
-            if(this.getDistance(player.x, player.y) < this.sight) {
-                // Enemy sees the player
-                if(player.mass <= this.mass * 1.25) {
-                    // chase/eat player
-                        danger = true;
-                        let dir = this.dirTowards(player.x, player.y);
-                        this.dirX = dir.x;
-                        this.dirY = dir.y;
-                } else if(this.mass <= player.mass * 1.25) {
-                    // run from player
-                        danger = true;
-                        let dir = this.dirTowards(player.x, player.y);
-                        this.dirX = -dir.x;
-                        this.dirY = -dir.y;
-                }
-            }
-        });
+        let foundPlayer: boolean = false;
         
-        Enemy.list.forEach((enemy: Enemy) => {
-            if(enemy != this && this.getDistance(enemy.x, enemy.y) < enemy.radius + this.radius && Math.abs(this.mass - enemy.mass) > 4) {
-                if(this.mass >= enemy.mass * 1.25) {
-                    this.radius += enemy.mass;
-                    this.mass += enemy.mass;
-                    enemy.respawn();
-                } else if (enemy.mass >= this.mass * 1.25) {
-                    enemy.radius += this.mass;
-                    enemy.mass += this.mass;
-                    this.respawn();
-                }
-            }
+        if(this.wandering > 0) this.wandering--;
 
-            
-
-            if(this.getDistance(enemy.x, enemy.y) < this.sight) {
-                    // run from enemy
-                    danger = true;
-                    let dir = this.dirTowards(enemy.x, enemy.y);
-                    if(enemy.mass >= this.mass * 1.25) {
-                        // run from enemy
-                        this.dirX = -dir.x;
-                        this.dirY = -dir.y;
-                    } else if(this.mass >= enemy.mass * 1.25) {
-                        this.dirX = dir.x;
-                        this.dirY = dir.y;
-                    }
-            }
-
-            
-        });
-
-        // find closest food
-        let closest: any;
-        let dist = Infinity;
-        if(!danger || Math.random() < 0.2) {
-            Food.list.forEach(f => {
-                if(this.getDistance(f.x, f.y) < dist) {
-                    dist = this.getDistance(f.x, f.y);
-                    closest = f;
-                }
-            });
-            if(closest) {
-                let dir = this.dirTowards(closest.x, closest.y);
-                this.dirX = dir.x;
-                this.dirY = dir.y;
-            }
-
+        
+        if(this.sprites.length < 1) {
+            this.respawn();
         }
 
-        /*if(Math.random() < 0.01) {
-            this.dirX = Math.random() * 2 - 1;
-            this.dirY = Math.random() * 2 - 1;
-        }*/
-        /*if(!this.dirX && !this.dirY) {
-            this.dirX = Math.random() * 2 - 1;
-            this.dirY = Math.random() * 2 - 1;
-        }*/
+        this.sprites.forEach(sprite => {
+            sprite.curSpd = this.calculateSpeed(sprite.mass);
+            Player.list.forEach((player: Player) => {
+                player.sprites.forEach(pSprite => {
+                    if(this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius && Math.abs(sprite.mass - pSprite.mass) > 4) {
+                        if(pSprite.mass >= sprite.mass * 1.25) {
+                            pSprite.radius += sprite.radius;
+                            pSprite.mass += sprite.mass;
+                            this.destroySprite(sprite);
+                        }
+                    }
+                    else if(pSprite !== sprite && this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius) {
+                        if(sprite.mass <= pSprite.mass) {
+                            const dir = this.dirTowards(pSprite.x, pSprite.y, sprite.x, sprite.y);
+                            pSprite.x -= dir.x * 2;
+                            pSprite.y -= dir.y * 2;
+                        }
+                    }
+                    if(!this.wandering && this.getDistance(sprite, pSprite.x, pSprite.y) < this.sight) {
+                        // Enemy sees the player
+                        foundPlayer = true;
+                        if(pSprite.mass <= sprite.mass * 1.25) {
+                            // chase/eat player
+                            let dir = this.dirTowards(sprite.x, sprite.y, pSprite.x, pSprite.y);
+                            sprite.dirX = dir.x;
+                            sprite.dirY = dir.y;
+                        } else if(sprite.mass <= pSprite.mass * 1.25) {
+                            // run from player
+                            this.inDanger = true;
+                            let dir = this.dirTowards(sprite.x, sprite.y, pSprite.x, pSprite.y);
+                            sprite.dirX = -dir.x;
+                            sprite.dirY = -dir.y;
+                        }
+                    }
 
+                    
+          
+                });
+            });
+            
+            Enemy.list.forEach((enemy: Enemy) => {
+                enemy.sprites.forEach(eSprite => {
+                    // Respawn / kill cell on collision
+                    if(enemy != this && this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius && Math.abs(sprite.mass - eSprite.mass) > 4) {
+                        if(eSprite.mass >= sprite.mass * 1.25) {
+                            eSprite.radius += sprite.radius;
+                            eSprite.mass += sprite.mass;
+                            this.destroySprite(sprite);
+                        }
+                    }
+                    // Keep enemy sprites from getting too close
+                    else if(eSprite !== sprite && this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius) {
+                        if(sprite.mass <= eSprite.mass) {
+                            const dir = this.dirTowards(eSprite.x, eSprite.y, sprite.x, sprite.y);
+                            eSprite.x -= dir.x * eSprite.curSpd;
+                            eSprite.y -= dir.y * eSprite.curSpd;
+                        }
+                    }
 
-        super.updatePosition();
+                    // Observe environment to chase / run from enemies
+                    if(!this.inDanger && !this.wandering && this.getDistance(sprite, eSprite.x, eSprite.y) < this.sight) {
+                        foundPlayer = true;
+                        let dir = this.dirTowards(sprite.x, sprite.y, eSprite.x, eSprite.y);
+                        if(eSprite.mass >= sprite.mass * 1.25) {
+                            sprite.dirX = -dir.x;
+                            sprite.dirY = -dir.y;
+                            this.inDanger = true;
+                        } else if(sprite.mass >= eSprite.mass * 1.25) {
+                            // run towards enemy
+                            sprite.dirX = dir.x;
+                            sprite.dirY = dir.y;
+                        }
+                    }
+                });
+            });
+
+            
+            if(!foundPlayer) {
+                this.inDanger = false;
+            }
+
+            
+
+            // find closest food
+            
+            let closest: any;
+            let dist = Infinity;
+            if(!this.inDanger) {
+                Food.list.forEach(f => {
+                    if(this.getDistance(sprite, f.getSprite().x, f.getSprite().y) < dist) {
+                        dist = this.getDistance(sprite, f.getSprite().x, f.getSprite().y);
+                        closest = f.getSprite();
+                    }
+                });
+                if(closest) {
+                    let dir = this.dirTowards(sprite.x, sprite.y, closest.x, closest.y);
+                    sprite.dirX = dir.x;
+                    sprite.dirY = dir.y;
+                }
+
+            }
+
+            this.sprites.forEach(sprite => {
+                if(sprite.mass > 200 && Math.random() < 0.1) {
+                    this.splitPlayer();
+                }
+                if(sprite.mass > 500) {
+                    this.destroySprite(sprite);
+                }
+            });
+        });
+        // Add some chance that the enemy won't do exactly as expected
+        if(Math.random() < 0.005) {
+            this.wandering = 200;
+        }
+        if(this.sprites.length < 5 && Math.random() < 0.001) {
+            this.splitPlayer();
+        }
+        super.update();
     }
-
-    /*updatePosition() {
-        this.x += 1;
-        this.y += 1;
-    }*/
 }
 
 export interface EnemyDto {
     id: string,
-    x: number,
-    y: number,
-    mass: number,
-    radius: number
+    sprites: EntitySprite[]//Map<string, EntitySprite>
 }

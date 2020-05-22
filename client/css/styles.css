@@ -20,11 +20,6 @@ body {
     width: 100%;
 }
 
-#canvas, #canvas-ui {
-    position: absolute;
-    border:1px solid #000000;
-}
-
 #ui {
     position: absolute;
     width: 100%;
@@ -34,7 +29,8 @@ body {
 #signDiv {
     position: absolute;
     top: 500px;
-    left: 450px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
     height: 2rem;
     text-align: center;

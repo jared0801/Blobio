@@ -1,4 +1,4 @@
-import { Entity } from './Entity';
+import { Entity, EntitySprite } from './Entity';
 import { Socket } from 'socket.io';
 /**
  * Class representing player
@@ -8,34 +8,22 @@ import { Socket } from 'socket.io';
 export declare class Player extends Entity {
     static list: Map<string, Player>;
     socket: Socket;
-    mass: number;
     name: string;
     constructor(params: any);
     static onConnect(name: string, socket: Socket): void;
     static onDisconnect(socket: Socket): void;
-    static allInitPacks(): {
-        id: string;
-        x: number;
-        y: number;
-        radius: number;
-        mass: number;
-        name: string;
-    }[];
+    static allInitPacks(): PlayerDto[];
     static allUpdatePacks(): PlayerDto[];
+    splitPlayer(): void;
+    destroySprite(p: EntitySprite): void;
     respawn(): void;
     getUpdatePack(): {
         id: string;
-        x: number;
-        y: number;
-        mass: number;
-        radius: number;
+        sprites: EntitySprite[];
     };
     getInitPack(): {
         id: string;
-        x: number;
-        y: number;
-        radius: number;
-        mass: number;
+        sprites: EntitySprite[];
         name: string;
     };
     private calculateSpeed;
@@ -43,8 +31,5 @@ export declare class Player extends Entity {
 }
 export interface PlayerDto {
     id: string;
-    x: number;
-    y: number;
-    mass: number;
-    radius: number;
+    sprites: EntitySprite[];
 }

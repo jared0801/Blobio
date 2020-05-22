@@ -321,6 +321,30 @@
         "version": "d522314e80ed71b57e3c2939d3c9594eaae63a4adf028559e6574f6b270b0fee",
         "signature": "d522314e80ed71b57e3c2939d3c9594eaae63a4adf028559e6574f6b270b0fee"
       },
+      "./node_modules/@types/socket.io/index.d.ts": {
+        "version": "17868dee2559ec6f6b6f5c996cdf22e9b17da693d8c88ee4635a3a28d8264c61",
+        "signature": "17868dee2559ec6f6b6f5c996cdf22e9b17da693d8c88ee4635a3a28d8264c61"
+      },
+      "./src/models/enemy.ts": {
+        "version": "6e601ad0b6d4f1f6089aca7b522d36b38ad9933d44e466302c3dbb278613357d",
+        "signature": "25a483a07d551e877671a5abd8e8f5101cd489c85edbda71aa9235585a705403"
+      },
+      "./src/models/food.ts": {
+        "version": "f13f332f01705efb01b9715ce7fbd09e5fcc5772ce13cafd2f278db643084087",
+        "signature": "5e5905f77b50ca7338a6c88a85268ae9b7dfd60719787cbbed34d709d8278671"
+      },
+      "./src/models/entity.ts": {
+        "version": "60a24cd419dd6f7556177c8230423cbe5559e32245ee93ae2bbb1e40fe735b57",
+        "signature": "4f4f195bd67d6b034366e4da76a9731b082bfabc83d27ae8090a93841d6e738a"
+      },
+      "./src/models/player.ts": {
+        "version": "66c1875540fe9559a2658e4f0a69e958affe8cd7629716c18b4fb80d5744b656",
+        "signature": "8f82293c4d8b9898af1def0e51012fca50a8b2dd9fb3c208150eac003be794a9"
+      },
+      "./src/socketevents.ts": {
+        "version": "66df5272e155ea16407f4a9aeaba7b38021a7c72f9d8775320cd0784d57e33a2",
+        "signature": "99e3e2b37589fc79c59bf32a9ab69a8fdef504b39ea93b4d42325fac890dcd03"
+      },
       "./node_modules/@types/range-parser/index.d.ts": {
         "version": "4e88b833be14c7f384e0dcd57bb30acd799e8e34d212635d693e41a75a71164b",
         "signature": "4e88b833be14c7f384e0dcd57bb30acd799e8e34d212635d693e41a75a71164b"
@@ -357,28 +381,12 @@
         "version": "c9ae0b351a07b52f29a28e869d8c7c8d29743bbb5eeddc7c0b5b2a69a2450528",
         "signature": "c9ae0b351a07b52f29a28e869d8c7c8d29743bbb5eeddc7c0b5b2a69a2450528"
       },
-      "./node_modules/@types/socket.io/index.d.ts": {
-        "version": "17868dee2559ec6f6b6f5c996cdf22e9b17da693d8c88ee4635a3a28d8264c61",
-        "signature": "17868dee2559ec6f6b6f5c996cdf22e9b17da693d8c88ee4635a3a28d8264c61"
-      },
-      "./src/models/enemy.ts": {
-        "version": "2a18d74b55e8adbd0d17f26494cfc992d90bcac45dc2b87266a20ce42e5587d0",
-        "signature": "32008c40ed6b39cfc821c8affa624c1b45a21ae881f5bb4123034dff8091bb3a"
-      },
-      "./src/models/food.ts": {
-        "version": "419be3b9bea36348e408a9f4d70e6a184c80d82f8d2f2e8259630792f0815969",
-        "signature": "2341c028dd0422dd28b87d551f14626ce0db698ce48f293877440e698bc2ef28"
-      },
-      "./src/models/entity.ts": {
-        "version": "5cc2961a1c595de1515a2e7addb9371c03f79e4b81ee0cf48f60e4140b3a3c33",
-        "signature": "7b7fac864483de2115f09c2bd28ba2119e2c0859e52e13a2f5c021a61fff3345"
-      },
-      "./src/models/player.ts": {
-        "version": "b074e516a0386f7d7b4a7f2be14c19f2b6c7d5aeaf114cb25eb1f572f8a0d023",
-        "signature": "13d88cf6962b76095b28bcae83b28c3b0ca5688b28ee7845937c1a01655bca52"
+      "./src/routes.ts": {
+        "version": "765a339a4e5cf152ab254a58dc00212678596ad4ea97ed8b32b4a3b56aa90920",
+        "signature": "e77879a287056cdb77036e3fe405eee7a3376409875b0dd09c1eb54f8dab270f"
       },
       "./src/app.ts": {
-        "version": "3a827fa35a87fd7194fb78e77c8401bbedcc2963e15404529d5ad12ae1737cc1",
+        "version": "de77c977400486fac5dbfc0941d8a3b9808172e7a8e7842d0bbe0f9b4ab126ca",
         "signature": "f761c91419d0a89422a0004ef1a92929dd4d2d5e5c16758654d8b0467d1998c6"
       }
     },
@@ -981,6 +989,61 @@
         "./node_modules/@types/node/util.d.ts",
         "./node_modules/@types/node/ts3.2/util.d.ts"
       ],
+      "./node_modules/@types/socket.io/index.d.ts": [
+        "./node_modules/@types/node/ts3.7/index.d.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/models/enemy.ts": [
+        "./src/models/entity.ts",
+        "./src/models/player.ts",
+        "./src/models/food.ts",
+        "./node_modules/@types/node/path.d.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/models/food.ts": [
+        "./src/models/entity.ts",
+        "./src/models/player.ts",
+        "./src/models/enemy.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/models/entity.ts": [
+        "./src/models/player.ts",
+        "./src/models/food.ts",
+        "./src/models/enemy.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/models/player.ts": [
+        "./src/models/entity.ts",
+        "./src/models/enemy.ts",
+        "./node_modules/@types/socket.io/index.d.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/socketevents.ts": [
+        "./node_modules/@types/socket.io/index.d.ts",
+        "./node_modules/@types/node/http.d.ts",
+        "./src/models/player.ts",
+        "./src/models/food.ts",
+        "./src/models/enemy.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
       "./node_modules/@types/range-parser/index.d.ts": [
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/ts3.2/fs.d.ts",
@@ -1052,45 +1115,9 @@
         "./node_modules/@types/node/util.d.ts",
         "./node_modules/@types/node/ts3.2/util.d.ts"
       ],
-      "./node_modules/@types/socket.io/index.d.ts": [
-        "./node_modules/@types/node/ts3.7/index.d.ts",
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/ts3.2/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./node_modules/@types/node/ts3.2/util.d.ts"
-      ],
-      "./src/models/enemy.ts": [
-        "./src/models/entity.ts",
-        "./src/models/player.ts",
-        "./src/models/food.ts",
+      "./src/routes.ts": [
+        "./node_modules/@types/express/index.d.ts",
         "./node_modules/@types/node/path.d.ts",
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/ts3.2/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./node_modules/@types/node/ts3.2/util.d.ts"
-      ],
-      "./src/models/food.ts": [
-        "./src/models/entity.ts",
-        "./src/models/player.ts",
-        "./src/models/enemy.ts",
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/ts3.2/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./node_modules/@types/node/ts3.2/util.d.ts"
-      ],
-      "./src/models/entity.ts": [
-        "./src/models/player.ts",
-        "./src/models/food.ts",
-        "./src/models/enemy.ts",
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/ts3.2/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./node_modules/@types/node/ts3.2/util.d.ts"
-      ],
-      "./src/models/player.ts": [
-        "./src/models/entity.ts",
-        "./src/models/enemy.ts",
-        "./node_modules/@types/socket.io/index.d.ts",
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/ts3.2/fs.d.ts",
         "./node_modules/@types/node/util.d.ts",
@@ -1098,13 +1125,13 @@
       ],
       "./src/app.ts": [
         "./node_modules/@types/express/index.d.ts",
-        "./node_modules/@types/node/path.d.ts",
         "./node_modules/dotenv/types/index.d.ts",
-        "./node_modules/@types/socket.io/index.d.ts",
         "./src/models/player.ts",
         "./src/models/food.ts",
         "./src/models/enemy.ts",
         "./src/models/entity.ts",
+        "./src/routes.ts",
+        "./src/socketevents.ts",
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/ts3.2/fs.d.ts",
         "./node_modules/@types/node/util.d.ts",
@@ -1687,6 +1714,31 @@
         "./node_modules/@types/node/util.d.ts",
         "./node_modules/@types/node/ts3.2/util.d.ts"
       ],
+      "./node_modules/@types/socket.io/index.d.ts": [
+        "./node_modules/@types/node/ts3.7/index.d.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/ts3.2/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./node_modules/@types/node/ts3.2/util.d.ts"
+      ],
+      "./src/models/enemy.ts": [
+        "./src/models/entity.ts"
+      ],
+      "./src/models/food.ts": [
+        "./src/models/entity.ts"
+      ],
+      "./src/models/entity.ts": [
+        "./src/models/player.ts",
+        "./src/models/food.ts",
+        "./src/models/enemy.ts"
+      ],
+      "./src/models/player.ts": [
+        "./node_modules/@types/socket.io/index.d.ts",
+        "./src/models/entity.ts"
+      ],
+      "./src/socketevents.ts": [
+        "./node_modules/@types/node/http.d.ts"
+      ],
       "./node_modules/@types/range-parser/index.d.ts": [
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/ts3.2/fs.d.ts",
@@ -1758,27 +1810,8 @@
         "./node_modules/@types/node/util.d.ts",
         "./node_modules/@types/node/ts3.2/util.d.ts"
       ],
-      "./node_modules/@types/socket.io/index.d.ts": [
-        "./node_modules/@types/node/ts3.7/index.d.ts",
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/ts3.2/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./node_modules/@types/node/ts3.2/util.d.ts"
-      ],
-      "./src/models/enemy.ts": [
-        "./src/models/entity.ts"
-      ],
-      "./src/models/food.ts": [
-        "./src/models/entity.ts"
-      ],
-      "./src/models/entity.ts": [
-        "./src/models/player.ts",
-        "./src/models/food.ts",
-        "./src/models/enemy.ts"
-      ],
-      "./src/models/player.ts": [
-        "./node_modules/@types/socket.io/index.d.ts",
-        "./src/models/entity.ts"
+      "./src/routes.ts": [
+        "./node_modules/@types/express-serve-static-core/index.d.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -1862,6 +1895,7 @@
       "./node_modules/@types/node/ts3.7/assert.d.ts",
       "./node_modules/@types/node/ts3.7/base.d.ts",
       "./node_modules/@types/node/ts3.7/index.d.ts",
+      "./node_modules/@types/socket.io/index.d.ts",
       "./node_modules/@types/range-parser/index.d.ts",
       "./node_modules/@types/qs/index.d.ts",
       "./node_modules/@types/express-serve-static-core/index.d.ts",
@@ -1871,12 +1905,13 @@
       "./node_modules/@types/body-parser/index.d.ts",
       "./node_modules/@types/express/index.d.ts",
       "./node_modules/dotenv/types/index.d.ts",
-      "./node_modules/@types/socket.io/index.d.ts",
-      "./src/models/food.ts",
+      "./src/routes.ts",
       "./src/models/entity.ts",
+      "./src/models/food.ts",
+      "./src/models/enemy.ts",
       "./src/models/player.ts",
-      "./src/app.ts",
-      "./src/models/enemy.ts"
+      "./src/socketevents.ts",
+      "./src/app.ts"
     ]
   },
   "version": "3.8.3"

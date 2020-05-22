@@ -1,49 +1,40 @@
-import { Entity } from './Entity';
+import { Entity, EntitySprite } from './Entity';
 export declare class Enemy extends Entity {
     static list: Map<string, Enemy>;
-    mass: number;
     name: string;
     sight: number;
+    inDanger: boolean;
+    wandering: number;
     constructor(params: any);
     static isNameTaken(name: string): boolean;
-    static onConnect(name: string): void;
-    static onDisconnect(id: string): void;
-    static allInitPacks(): {
-        id: string;
+    static onConnect(): void;
+    static allInitPacks(): EnemyDto[];
+    static allUpdatePacks(): EnemyDto[];
+    /**
+     * Finds the coordinates for the center of all this enemies sprites
+     * @function getSpriteCenter
+     * @return { x: number, y: number }
+     */
+    getSpriteCenter(): {
         x: number;
         y: number;
-        radius: number;
-        mass: number;
-        name: string;
-    }[];
-    static allUpdatePacks(): EnemyDto[];
+    };
+    destroySprite(p: EntitySprite): void;
     respawn(): void;
     getUpdatePack(): {
         id: string;
-        x: number;
-        y: number;
-        mass: number;
-        radius: number;
+        sprites: EntitySprite[];
     };
     getInitPack(): {
         id: string;
-        x: number;
-        y: number;
-        radius: number;
-        mass: number;
+        sprites: EntitySprite[];
         name: string;
     };
     private calculateSpeed;
-    dirTowards(x: number, y: number): {
-        x: number;
-        y: number;
-    };
+    splitPlayer(): void;
     update(): void;
 }
 export interface EnemyDto {
     id: string;
-    x: number;
-    y: number;
-    mass: number;
-    radius: number;
+    sprites: EntitySprite[];
 }

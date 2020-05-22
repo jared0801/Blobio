@@ -26,7 +26,6 @@ window.onload = function() {
     app.loader.baseUrl = 'client/img';
     app.loader.add('player', 'player.png')
               .add('spike', 'spike.png')
-              .add('map', 'somemap.png')
               .add('food-green', 'food-green.png')
               .add('food-yellow', 'food-yellow.png')
               .add('food-red', 'food-red.png')
@@ -37,7 +36,7 @@ window.onload = function() {
     app.loader.onError.add(reportError);
 
     const bgTexture = new PIXI.Texture(PIXI.Texture.from('/client/img/map1.png'),
-                      new PIXI.Rectangle(0, 0, 3008, 3008));
+                      new PIXI.Rectangle(0, 0, 4008, 4008));
     const bg = new PIXI.Sprite(bgTexture);
     bg.anchor.x = 0;
     bg.anchor.y = 0;

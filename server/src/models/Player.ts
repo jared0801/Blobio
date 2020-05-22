@@ -1,9 +1,9 @@
-import { Entity } from './Entity';
+import { Entity, EntitySprite } from './Entity';
 import { Enemy } from './Enemy';
 import { Socket } from 'socket.io';
 
-const MAP_W = 3008;
-const MAP_H = 3008;
+const MAP_W = 4008;
+const MAP_H = 4008;
 /**
  * Class representing player
  * @class
@@ -12,15 +12,13 @@ const MAP_H = 3008;
 export class Player extends Entity {
     static list: Map<string, Player> = new Map();
     socket: Socket;
-    mass: number;
     name: string;
     constructor(params: any) {
         super(params);
 
         this.socket = params.socket;
-        this.mass = 1;
-        this.radius = 32;
         this.name = params.name;
+        this.id = this.socket.id;
         
         Player.list.set(this.socket.id, this);
         Entity.initPack.player.push(this.getInitPack());
@@ -30,36 +28,43 @@ export class Player extends Entity {
         const newPlayer: Player = new Player({
             socket,
             name,
+            radius: 32,
             x: Math.random() * MAP_W,
             y: Math.random() * MAP_H
         });
         
         newPlayer.socket.on('mouseMove', (data: { x: number; y: number; }) => {
-
-            let dirX = data.x - newPlayer.x;
-            let dirY = data.y - newPlayer.y;
-            //newPlayer.targetX = data.x;
-            //newPlayer.targetY = data.y;
-    
-            let len = Math.sqrt(dirX * dirX + dirY * dirY);
-            if(len < 1) {
-                dirX = 0;
-                dirY = 0;
-            } else {
-                dirX /= len;
-                dirY /= len;
-            }
-    
-            newPlayer.dirX = dirX;
-            newPlayer.dirY = dirY;
+            newPlayer.sprites.forEach(sprite => {
+                let dirX = data.x - sprite.x;
+                let dirY = data.y - sprite.y;
+        
+                let len = Math.sqrt(dirX * dirX + dirY * dirY);
+                if(len < 1) {
+                    dirX = 0;
+                    dirY = 0;
+                } else {
+                    dirX /= len;
+                    dirY /= len;
+                }
+        
+                sprite.dirX = dirX;
+                sprite.dirY = dirY;
+            });
         });
+
+        newPlayer.socket.on('space', () => {
+            
+            newPlayer.splitPlayer();
+        });
+
+        
+
 
         
         
     }
 
     static onDisconnect(socket: Socket) {
-        console.log(Player.list);
         console.log(socket.id + " just quit");
         if(Player.list.delete(socket.id)) {
             Entity.removePack.player.push(socket.id);
@@ -67,10 +72,10 @@ export class Player extends Entity {
     }
 
     static allInitPacks() {
-        let players = [];
-        for(let [id, p] of Player.list) {
-            players.push(p.getInitPack());
-        }
+        let players: PlayerDto[] = [];
+        Player.list.forEach((player: Player) => {
+            players.push(player.getInitPack());
+        });
         return players;
     }
 
@@ -86,76 +91,113 @@ export class Player extends Entity {
         return pack;
     }
 
+    splitPlayer() {
+        //if(p.mass < 20) return;
+
+        let largest: EntitySprite = this.createSprite(this.id);
+        largest.mass = 0;
+
+        this.sprites.forEach(p => {
+            if(p.mass >= largest.mass) largest = p;
+        });
+
+        const x = largest.x + largest.dirX * Math.random() * 50 + 10;
+        const y = largest.y + largest.dirY * Math.random() * 50 + 10;
+        
+        const portion = Math.random() * 0.5 + 0.25;
+        const radius = Math.max(1, Math.floor(largest.radius * portion));
+        largest.radius = Math.max(1, largest.radius - radius);
+        const mass = Math.max(1, Math.floor(largest.mass * portion));
+        largest.mass = Math.max(1, largest.mass - mass);
+        const curSpd = Math.random() * 8 + 2;
+        const newOne: EntitySprite = this.createSprite(this.id, x, y, mass, radius, curSpd);
+
+        this.sprites.push(newOne);
+        
+    }
+
+    destroySprite(p: EntitySprite) {
+        let index = this.sprites.indexOf(p);
+        this.sprites.splice(index, 1);
+        if(this.sprites.length < 1) this.respawn();
+    }
+
     respawn() {
-        this.x = Math.random() * MAP_W;
-        this.y = Math.random() * MAP_H;
-        this.radius = 32;
-        this.mass = 1;
+        const sprite = super.createSprite(
+            this.id,
+            Math.random() * MAP_W,
+            Math.random() * MAP_H
+        )
+        this.sprites.push(sprite);
     }
 
     getUpdatePack() {
         return {
-            id: this.socket.id,
-            x: this.x,
-            y: this.y,
-            mass: this.mass,
-            radius: this.radius,
+            id: this.id,
+            sprites: this.sprites
         }
     }
 
     getInitPack() {
         return {
-            id: this.socket.id,
-            x: this.x,
-            y: this.y,
-            radius: this.radius,
-            mass: this.mass,
+            id: this.id,
+            sprites: this.sprites,
             name: this.name
         }
     }
 
-    private calculateSpeed() {
-        return this.maxSpd - Math.log10(this.mass);
+    private calculateSpeed(mass: number): number {
+        return this.maxSpd - 3*Math.log10(mass);
     }
 
     
     update() {
+        this.sprites.forEach(sprite => {
+            sprite.curSpd = this.calculateSpeed(sprite.mass);
+            Player.list.forEach((player: Player) => {
+                player.sprites.forEach(pSprite => {
+                    if(player != this && this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius && Math.abs(sprite.mass - pSprite.mass) > 4) {
+                        if(pSprite.mass >= sprite.mass * 1.25) {
+                            pSprite.radius += sprite.radius;
+                            pSprite.mass += sprite.mass;
+                            this.destroySprite(sprite);
+                        }
+                    }
+                    else if(pSprite !== sprite && this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius) {
+                        if(sprite.mass <= pSprite.mass) {
+                            const dir = this.dirTowards(pSprite.x, pSprite.y, sprite.x, sprite.y);
+                            pSprite.x -= dir.x * 2;
+                            pSprite.y -= dir.y * 2;
+                        }
+                    }
+                });
+            });
+            
+            Enemy.list.forEach((enemy: Enemy) => {
+                enemy.sprites.forEach(eSprite => {
+                    if(this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius && Math.abs(sprite.mass - eSprite.mass) > 4) {
+                        if(eSprite.mass >= sprite.mass * 1.25) {
+                            eSprite.radius += sprite.radius;
+                            eSprite.mass += sprite.mass;
+                            this.destroySprite(sprite);
+                        }
+                    }
+                    
+                    else if(eSprite !== sprite && this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius) {
+                        if(sprite.mass <= eSprite.mass) {
+                            const dir = this.dirTowards(eSprite.x, eSprite.y, sprite.x, sprite.y);
+                            eSprite.x -= dir.x * eSprite.curSpd;
+                            eSprite.y -= dir.y * eSprite.curSpd;
+                        }
+                    }
+                });
+            });
+        });
         super.update();
-        this.curSpd = this.calculateSpeed();
-        Player.list.forEach((player: Player) => {
-            if(player != this && this.getDistance(player.x, player.y) < player.radius + this.radius && Math.abs(this.mass - player.mass) > 4) {
-                if(this.mass >= player.mass * 1.25) {
-                    this.radius += player.mass;
-                    this.mass += player.mass;
-                    player.respawn();
-                } else if(player.mass >= this.mass * 1.25) {
-                    player.radius += this.mass;
-                    player.mass += this.mass;
-                    this.respawn();
-                }
-            }
-        });
-        
-        Enemy.list.forEach((enemy: Enemy) => {
-            if(this.getDistance(enemy.x, enemy.y) < enemy.radius + this.radius && Math.abs(this.mass - enemy.mass) > 4) {
-                if(this.mass >= enemy.mass * 1.25) {
-                    this.radius += enemy.mass;
-                    this.mass += enemy.mass;
-                    enemy.respawn();
-                } else if(enemy.mass >= this.mass * 1.25) {
-                    enemy.radius += this.mass;
-                    enemy.mass += this.mass;
-                    this.respawn();
-                }
-            }
-        });
     }
 }
 
 export interface PlayerDto {
     id: string,
-    x: number,
-    y: number,
-    mass: number,
-    radius: number
+    sprites: EntitySprite[] //Map<string, EntitySprite>
 }

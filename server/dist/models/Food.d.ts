@@ -1,4 +1,4 @@
-import { Entity } from './Entity';
+import { Entity, EntitySprite } from './Entity';
 export declare class Food extends Entity {
     static list: Map<string, Food>;
     mass: number;
@@ -8,18 +8,16 @@ export declare class Food extends Entity {
     static spawnRandomFood(): void;
     getInitPack(): {
         id: string;
-        x: number;
-        y: number;
+        sprites: EntitySprite[];
     };
     getUpdatePack(): {
         id: string;
-        x: number;
-        y: number;
+        sprites: EntitySprite[];
     };
+    getSprite(): EntitySprite;
     update(): void;
 }
 export interface FoodDto {
     id: string;
-    x: number;
-    y: number;
+    sprites: EntitySprite[];
 }

@@ -7,23 +7,26 @@
     <title>Agar thing</title>
 </head>
 <body>
-    <h1>Hello world agar</h1>
+    <div style="text-align: center;">
+        <h1>Blobio</h1>
 
-    <div id="signDiv">
-        <label for="signDiv-name">Enter a name to get started!</label>
-        <br>
-        <input id="signDiv-name" type="text">
-        <button id="signDiv-signIn">Start!</button>
-    </div>
-
-    <div id="gameDiv" style="opacity: 0.3">
-        <div id="chatText" style="width: 800px; height: 100px; overflow-y: scroll">
-            <div>Hello!</div>
+        <div id="signDiv">
+            <label for="signDiv-name">Enter a name to get started!</label>
+            <br>
+            <input id="signDiv-name" type="text">
+            <button id="signDiv-signIn">Start!</button>
         </div>
-    
-        <form id="chatForm">
-            <input id="chatInput" type="text" style="width: 800px">
-        </form>
+
+        <div id="topScores" style="position: absolute; right: 0; z-index: 100; background-color: white; font-size: 1.2rem"></div>
+        <div id="gameDiv" style="opacity: 0.3">
+            <div id="chatText" style="width: 1200px; height: 100px; overflow-y: scroll; margin: auto; text-align: left;">
+                <div>Welcome to Blobio!</div>
+            </div>
+        
+            <form id="chatForm">
+                <input id="chatInput" type="text" style="width: 1200px">
+            </form>
+        </div>
     </div>
     
 </body>

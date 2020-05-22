@@ -1,6 +1,17 @@
 import { PlayerDto } from "./Player";
 import { FoodDto } from "./Food";
 import { EnemyDto } from "./Enemy";
+export interface EntitySprite {
+    x: number;
+    y: number;
+    dirX: number;
+    dirY: number;
+    curSpd: number;
+    radius: number;
+    mass: number;
+    id: string;
+    parentId: string;
+}
 export declare class Entity {
     static initPack: {
         player: PlayerDto[];
@@ -8,20 +19,22 @@ export declare class Entity {
         enemy: EnemyDto[];
     };
     static removePack: {
-        player: any;
-        food: any;
-        enemy: any;
+        player: string[];
+        food: string[];
+        enemy: string[];
     };
-    x: number;
-    y: number;
+    sprites: EntitySprite[];
     id: string;
-    dirX: number;
-    dirY: number;
     maxSpd: number;
-    curSpd: number;
-    radius: number;
     constructor(params: any);
+    createSprite(pid: string, x?: number, y?: number, mass?: number, radius?: number, curSpd?: number): EntitySprite;
     update(): void;
     updatePosition(): void;
-    getDistance(x: number, y: number): number;
+    dirTowards(srcX: number, srcY: number, tarX: number, tarY: number): {
+        x: number;
+        y: number;
+    };
+    getDistanceFromAll(x: number, y: number): number[];
+    getDistance(sprite: EntitySprite, x: number, y: number): number;
+    getMass(): number;
 }

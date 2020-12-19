@@ -107,7 +107,6 @@ var Food = /** @class */ (function (_super) {
             player.sprites.forEach(function (pSprite) {
                 if (_this.getDistance(_this.getSprite(), pSprite.x, pSprite.y) < pSprite.radius) {
                     pSprite.mass++;
-                    pSprite.radius++;
                     if (Food.list.delete(_this.id)) {
                         Entity_1.Entity.removePack.food.push(_this.id);
                     }
@@ -118,7 +117,6 @@ var Food = /** @class */ (function (_super) {
             enemy.sprites.forEach(function (eSprite) {
                 if (_this.getDistance(_this.getSprite(), eSprite.x, eSprite.y) < eSprite.radius) {
                     eSprite.mass++;
-                    eSprite.radius++;
                     if (Food.list.delete(_this.id)) {
                         Entity_1.Entity.removePack.food.push(_this.id);
                     }

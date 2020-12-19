@@ -31,6 +31,7 @@ export declare class Enemy extends Entity {
         name: string;
     };
     private calculateSpeed;
+    rejoinPlayer(sprite: EntitySprite): void;
     splitPlayer(): void;
     update(): void;
 }

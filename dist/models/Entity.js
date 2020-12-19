@@ -4,21 +4,20 @@ var MAP_W = 4008;
 var MAP_H = 4008;
 var Entity = /** @class */ (function () {
     function Entity(params) {
-        this.sprites = []; //= new Map<string, EntitySprite>();
+        this.sprites = [];
         this.id = params.id || '' + Math.random();
         if (params.socket) {
             // Real player: override id with socket id
             this.id = params.socket.id;
         }
         this.maxSpd = 10;
-        var sprite = this.createSprite(this.id, params.x, params.y, 1, params.radius);
+        var sprite = this.createSprite(this.id, params.x, params.y, 1);
         this.sprites.push(sprite);
     }
-    Entity.prototype.createSprite = function (pid, x, y, mass, radius, curSpd) {
+    Entity.prototype.createSprite = function (pid, x, y, mass, curSpd) {
         if (x === void 0) { x = 0; }
         if (y === void 0) { y = 0; }
         if (mass === void 0) { mass = 1; }
-        if (radius === void 0) { radius = 32; }
         if (curSpd === void 0) { curSpd = 10; }
         return {
             x: x,
@@ -26,10 +25,12 @@ var Entity = /** @class */ (function () {
             dirX: 0,
             dirY: 0,
             curSpd: curSpd,
-            radius: radius,
+            radius: 31 + mass,
             mass: mass,
             id: '' + Math.random(),
-            parentId: pid
+            parentId: pid,
+            splitTime: -1,
+            splitParentId: ''
         };
     };
     Entity.prototype.update = function () {
@@ -47,6 +48,7 @@ var Entity = /** @class */ (function () {
                 sprite.y = MAP_H;
             if (sprite.y < 0)
                 sprite.y = 0;
+            sprite.radius = 31 + sprite.mass;
         });
     };
     Entity.prototype.dirTowards = function (srcX, srcY, tarX, tarY) {
@@ -67,6 +69,25 @@ var Entity = /** @class */ (function () {
         return Array.from(this.sprites.values()).map(function (sprite) {
             return Math.sqrt(Math.pow(sprite.x - x, 2) + Math.pow(sprite.y - y, 2));
         });
+    };
+    /**
+     * Finds the coordinates for the center of all this players sprites
+     * @function getSpriteCenter
+     * @return { x: number, y: number }
+     */
+    Entity.prototype.getSpriteCenter = function () {
+        var x = 0;
+        var y = 0;
+        this.sprites.forEach(function (sprite) {
+            x += sprite.x;
+            y += sprite.y;
+        });
+        x /= this.sprites.length;
+        y /= this.sprites.length;
+        return {
+            x: x,
+            y: y
+        };
     };
     Entity.prototype.getDistance = function (sprite, x, y) {
         return Math.sqrt(Math.pow(sprite.x - x, 2) + Math.pow(sprite.y - y, 2));

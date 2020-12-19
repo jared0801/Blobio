@@ -1,12 +1,11 @@
 # Blobio
 This is Blobio, a clone of the classic game [agar.io](agar.io) where players compete to become the largest blob in the game by eating food and, once their big enough, other players.
 
-To run the server you will need [Node.js](https://nodejs.org/en/) installed and to edit the source files you will need [TypeScript](https://www.typescriptlang.org/) as well.
+To run the server you will need [Node.js](https://nodejs.org/en/) and [TypeScript](https://www.typescriptlang.org/) installed.
 
 ## Install
-To setup the environment you will first need to install the node dependencies for the server
+To setup the environment you will first need to install the node dependencies
 ```
-cd server/
 npm i
 ```
 

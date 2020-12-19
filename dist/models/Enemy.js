@@ -51,7 +51,6 @@ var Enemy = /** @class */ (function (_super) {
     };
     Enemy.onConnect = function () {
         new Enemy({
-            radius: 32,
             x: Math.random() * MAP_W,
             y: Math.random() * MAP_H
         });
@@ -117,6 +116,11 @@ var Enemy = /** @class */ (function (_super) {
     Enemy.prototype.calculateSpeed = function (mass) {
         return this.maxSpd - Math.log10(mass);
     };
+    Enemy.prototype.rejoinPlayer = function (sprite) {
+        var parent = this.sprites.filter(function (spr) { return spr.id === sprite.id; })[0];
+        parent.mass += sprite.mass;
+        this.destroySprite(sprite);
+    };
     Enemy.prototype.splitPlayer = function () {
         var largest = this.createSprite(this.id);
         largest.mass = 0;
@@ -129,12 +133,13 @@ var Enemy = /** @class */ (function (_super) {
         var x = largest.x + largest.dirX * Math.random() * 50 + 10;
         var y = largest.y + largest.dirY * Math.random() * 50 + 10;
         var portion = Math.random() * 0.5 + 0.25;
-        var radius = Math.max(1, Math.floor(largest.radius * portion));
-        largest.radius = Math.max(1, largest.radius - radius);
         var mass = Math.max(1, Math.floor(largest.mass * portion));
         largest.mass = Math.max(1, largest.mass - mass);
         var curSpd = Math.random() * 8 + 2;
-        var newOne = this.createSprite(this.id, x, y, mass, radius, curSpd);
+        var newOne = this.createSprite(this.id, x, y, mass, curSpd);
+        // Reset split timer
+        newOne.splitTime = 1000;
+        newOne.splitParentId = largest.id;
         this.sprites.push(newOne);
     };
     Enemy.prototype.update = function () {
@@ -145,74 +150,87 @@ var Enemy = /** @class */ (function (_super) {
         if (this.sprites.length < 1) {
             this.respawn();
         }
+        var target = { x: 0, y: 0 };
+        // Decision loop (all sprites help make decision)
         this.sprites.forEach(function (sprite) {
             sprite.curSpd = _this.calculateSpeed(sprite.mass);
             Player_1.Player.list.forEach(function (player) {
                 player.sprites.forEach(function (pSprite) {
-                    if (_this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius && Math.abs(sprite.mass - pSprite.mass) > 4) {
-                        if (pSprite.mass >= sprite.mass * 1.25) {
-                            pSprite.radius += sprite.radius;
+                    if (_this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius) {
+                        // Enemy and player sprites are colliding
+                        if (pSprite.mass >= sprite.mass * 1.25 && Math.abs(sprite.mass - pSprite.mass) > 4) {
+                            // player eats this sprite
                             pSprite.mass += sprite.mass;
                             _this.destroySprite(sprite);
                         }
-                    }
-                    else if (pSprite !== sprite && _this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius) {
-                        if (sprite.mass <= pSprite.mass) {
-                            var dir = _this.dirTowards(pSprite.x, pSprite.y, sprite.x, sprite.y);
-                            pSprite.x -= dir.x * 2;
-                            pSprite.y -= dir.y * 2;
+                        else {
+                            if (sprite.mass <= pSprite.mass) {
+                                // move player away to prevent players stacking on top of each other
+                                var dir = _this.dirTowards(pSprite.x, pSprite.y, sprite.x, sprite.y);
+                                pSprite.x -= dir.x * 2;
+                                pSprite.y -= dir.y * 2;
+                            }
                         }
                     }
                     if (!_this.wandering && _this.getDistance(sprite, pSprite.x, pSprite.y) < _this.sight) {
                         // Enemy sees the player
                         foundPlayer = true;
-                        if (pSprite.mass <= sprite.mass * 1.25) {
+                        //let dir = this.dirTowards(sprite.x, sprite.y, pSprite.x, pSprite.y);
+                        if (pSprite.mass <= sprite.mass * 1.25 && Math.abs(sprite.mass - pSprite.mass) > 4) {
                             // chase/eat player
-                            var dir = _this.dirTowards(sprite.x, sprite.y, pSprite.x, pSprite.y);
-                            sprite.dirX = dir.x;
-                            sprite.dirY = dir.y;
+                            /*sprite.dirX = dir.x;
+                            sprite.dirY = dir.y;*/
+                            target.x = pSprite.x;
+                            target.y = pSprite.y;
                         }
-                        else if (sprite.mass <= pSprite.mass * 1.25) {
+                        else if (sprite.mass <= pSprite.mass * 1.25 && Math.abs(sprite.mass - pSprite.mass) > 4) {
                             // run from player
                             _this.inDanger = true;
-                            var dir = _this.dirTowards(sprite.x, sprite.y, pSprite.x, pSprite.y);
-                            sprite.dirX = -dir.x;
-                            sprite.dirY = -dir.y;
+                            target.x = pSprite.x;
+                            target.y = pSprite.y;
+                            /*sprite.dirX = -dir.x;
+                            sprite.dirY = -dir.y;*/
                         }
                     }
                 });
             });
             Enemy.list.forEach(function (enemy) {
                 enemy.sprites.forEach(function (eSprite) {
-                    // Respawn / kill cell on collision
-                    if (enemy != _this && _this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius && Math.abs(sprite.mass - eSprite.mass) > 4) {
-                        if (eSprite.mass >= sprite.mass * 1.25) {
-                            eSprite.radius += sprite.radius;
+                    if (_this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius) {
+                        // This enemies sprite and another enemies sprite are colliding
+                        if (enemy != _this && eSprite.mass >= sprite.mass * 1.25 && Math.abs(sprite.mass - eSprite.mass) > 4) {
+                            // other enemy eats this sprite
                             eSprite.mass += sprite.mass;
                             _this.destroySprite(sprite);
                         }
-                    }
-                    // Keep enemy sprites from getting too close
-                    else if (eSprite !== sprite && _this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius) {
-                        if (sprite.mass <= eSprite.mass) {
-                            var dir = _this.dirTowards(eSprite.x, eSprite.y, sprite.x, sprite.y);
-                            eSprite.x -= dir.x * eSprite.curSpd;
-                            eSprite.y -= dir.y * eSprite.curSpd;
+                        else if (eSprite !== sprite) {
+                            if (sprite.mass <= eSprite.mass) {
+                                // move other enemy away to prevent players stacking on top of each other
+                                var dir = _this.dirTowards(eSprite.x, eSprite.y, sprite.x, sprite.y);
+                                eSprite.x -= dir.x * 2;
+                                eSprite.y -= dir.y * 2;
+                            }
                         }
                     }
                     // Observe environment to chase / run from enemies
-                    if (!_this.inDanger && !_this.wandering && _this.getDistance(sprite, eSprite.x, eSprite.y) < _this.sight) {
+                    if (!_this.wandering && _this.getDistance(sprite, eSprite.x, eSprite.y) < _this.sight) {
                         foundPlayer = true;
-                        var dir = _this.dirTowards(sprite.x, sprite.y, eSprite.x, eSprite.y);
-                        if (eSprite.mass >= sprite.mass * 1.25) {
-                            sprite.dirX = -dir.x;
-                            sprite.dirY = -dir.y;
+                        if (eSprite.mass >= sprite.mass * 1.25 && Math.abs(sprite.mass - eSprite.mass) > 4) {
+                            // This enemy sees another enemy that can eat him and runs away
+                            //let dir = this.dirTowards(sprite.x, sprite.y, eSprite.x, eSprite.y);
+                            //sprite.dirX = -dir.x;
+                            //sprite.dirY = -dir.y;
+                            target.x = eSprite.x;
+                            target.y = eSprite.y;
                             _this.inDanger = true;
                         }
-                        else if (sprite.mass >= eSprite.mass * 1.25) {
-                            // run towards enemy
-                            sprite.dirX = dir.x;
-                            sprite.dirY = dir.y;
+                        else if (sprite.mass >= eSprite.mass * 1.25 && Math.abs(sprite.mass - eSprite.mass) > 4) {
+                            // This enemy sees another enemy that he can eat and runs towards him
+                            //let dir = this.dirTowards(sprite.x, sprite.y, eSprite.x, eSprite.y);
+                            //sprite.dirX = dir.x;
+                            //sprite.dirY = dir.y;
+                            target.x = eSprite.x;
+                            target.y = eSprite.y;
                         }
                     }
                 });
@@ -223,7 +241,7 @@ var Enemy = /** @class */ (function (_super) {
             // find closest food
             var closest;
             var dist = Infinity;
-            if (!_this.inDanger) {
+            if (!_this.inDanger && !foundPlayer) {
                 Food_1.Food.list.forEach(function (f) {
                     if (_this.getDistance(sprite, f.getSprite().x, f.getSprite().y) < dist) {
                         dist = _this.getDistance(sprite, f.getSprite().x, f.getSprite().y);
@@ -231,19 +249,41 @@ var Enemy = /** @class */ (function (_super) {
                     }
                 });
                 if (closest) {
-                    var dir = _this.dirTowards(sprite.x, sprite.y, closest.x, closest.y);
+                    /*let dir = this.dirTowards(sprite.x, sprite.y, closest.x, closest.y);
                     sprite.dirX = dir.x;
-                    sprite.dirY = dir.y;
+                    sprite.dirY = dir.y;*/
+                    target.x = closest.x;
+                    target.y = closest.y;
                 }
             }
             _this.sprites.forEach(function (sprite) {
-                if (sprite.mass > 200 && Math.random() < 0.1) {
+                if (sprite.mass > 50 && Math.random() < 0.01) {
                     _this.splitPlayer();
                 }
-                if (sprite.mass > 500) {
-                    _this.destroySprite(sprite);
-                }
             });
+            if (_this.getDistance(sprite, _this.getSpriteCenter().x, _this.getSpriteCenter().y) > sprite.radius * 3) {
+                target.x = _this.getSpriteCenter().x;
+                target.y = _this.getSpriteCenter().y;
+            }
+            if (sprite.splitParentId !== '') {
+                if (sprite.splitTime > 0)
+                    sprite.splitTime--;
+                if (sprite.splitTime === 0) {
+                    _this.rejoinPlayer(sprite);
+                }
+            }
+        });
+        // Action loop (all sprites move based on the target that was decided & their position)
+        this.sprites.forEach(function (sprite) {
+            var dir = _this.dirTowards(sprite.x, sprite.y, target.x, target.y);
+            if (_this.inDanger) {
+                sprite.dirX = -dir.x;
+                sprite.dirY = -dir.y;
+            }
+            else {
+                sprite.dirX = dir.x;
+                sprite.dirY = dir.y;
+            }
         });
         // Add some chance that the enemy won't do exactly as expected
         if (Math.random() < 0.005) {

@@ -37,7 +37,6 @@ var Player = /** @class */ (function (_super) {
         var newPlayer = new Player({
             socket: socket,
             name: name,
-            radius: 32,
             x: Math.random() * MAP_W,
             y: Math.random() * MAP_H
         });
@@ -60,6 +59,11 @@ var Player = /** @class */ (function (_super) {
         });
         newPlayer.socket.on('space', function () {
             newPlayer.splitPlayer();
+        });
+        newPlayer.socket.on('grow', function () {
+            newPlayer.sprites.forEach(function (sprite) {
+                sprite.mass += 10;
+            });
         });
     };
     Player.onDisconnect = function (socket) {
@@ -96,13 +100,21 @@ var Player = /** @class */ (function (_super) {
         var x = largest.x + largest.dirX * Math.random() * 50 + 10;
         var y = largest.y + largest.dirY * Math.random() * 50 + 10;
         var portion = Math.random() * 0.5 + 0.25;
-        var radius = Math.max(1, Math.floor(largest.radius * portion));
-        largest.radius = Math.max(1, largest.radius - radius);
+        /*const radius = Math.max(1, Math.floor(largest.radius * portion));
+        largest.radius = Math.max(1, largest.radius - radius);*/
         var mass = Math.max(1, Math.floor(largest.mass * portion));
         largest.mass = Math.max(1, largest.mass - mass);
         var curSpd = Math.random() * 8 + 2;
-        var newOne = this.createSprite(this.id, x, y, mass, radius, curSpd);
+        var newOne = this.createSprite(this.id, x, y, mass, curSpd);
+        // Reset split timer
+        newOne.splitTime = 1000;
+        newOne.splitParentId = largest.id;
         this.sprites.push(newOne);
+    };
+    Player.prototype.rejoinPlayer = function (sprite) {
+        var parent = this.sprites.filter(function (spr) { return spr.id === sprite.id; })[0];
+        parent.mass += sprite.mass;
+        this.destroySprite(sprite);
     };
     Player.prototype.destroySprite = function (p) {
         var index = this.sprites.indexOf(p);
@@ -138,7 +150,7 @@ var Player = /** @class */ (function (_super) {
                 player.sprites.forEach(function (pSprite) {
                     if (player != _this && _this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius && Math.abs(sprite.mass - pSprite.mass) > 4) {
                         if (pSprite.mass >= sprite.mass * 1.25) {
-                            pSprite.radius += sprite.radius;
+                            //pSprite.radius += sprite.radius;
                             pSprite.mass += sprite.mass;
                             _this.destroySprite(sprite);
                         }
@@ -156,7 +168,7 @@ var Player = /** @class */ (function (_super) {
                 enemy.sprites.forEach(function (eSprite) {
                     if (_this.getDistance(sprite, eSprite.x, eSprite.y) < eSprite.radius + sprite.radius && Math.abs(sprite.mass - eSprite.mass) > 4) {
                         if (eSprite.mass >= sprite.mass * 1.25) {
-                            eSprite.radius += sprite.radius;
+                            //eSprite.radius += sprite.radius;
                             eSprite.mass += sprite.mass;
                             _this.destroySprite(sprite);
                         }
@@ -170,6 +182,13 @@ var Player = /** @class */ (function (_super) {
                     }
                 });
             });
+            if (sprite.splitParentId !== '') {
+                if (sprite.splitTime > 0)
+                    sprite.splitTime--;
+                if (sprite.splitTime === 0) {
+                    _this.rejoinPlayer(sprite);
+                }
+            }
         });
         _super.prototype.update.call(this);
     };

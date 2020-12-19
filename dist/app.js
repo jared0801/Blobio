@@ -13,8 +13,9 @@ var routes_1 = require("./routes");
 var SocketEvents_1 = require("./SocketEvents");
 dotenv_1.config();
 var app = express_1.default();
+var port = process.env.PORT || 5000;
 app.use('/', routes_1.router);
-var http = app.listen(5000, function () { return console.log('Server running'); });
+var http = app.listen(port, function () { return console.log('Server running'); });
 SocketEvents_1.connectIO(http);
 var topScores = [];
 setInterval(function () {
@@ -22,10 +23,12 @@ setInterval(function () {
 }, 1000 / 25);
 function update() {
     // occasionally spawn enemy
-    if (Enemy_1.Enemy.list.size > 40)
-        console.log(Enemy_1.Enemy.list.size);
-    if (Math.random() < 0.01 && Enemy_1.Enemy.list.size < 100) {
-        Enemy_1.Enemy.onConnect();
+    if (Math.random() < 0.005 && Enemy_1.Enemy.list.size < 100) {
+        // Spawn between 3 and 10 enemies
+        var rand = Math.floor(Math.random() * 8) + 3;
+        for (var i = 0; i < rand; i++) {
+            Enemy_1.Enemy.onConnect();
+        }
     }
     // occasionally spawn food
     if (Math.random() < 0.5 && Food_1.Food.list.size < 200) {

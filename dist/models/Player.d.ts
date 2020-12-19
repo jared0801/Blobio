@@ -15,6 +15,7 @@ export declare class Player extends Entity {
     static allInitPacks(): PlayerDto[];
     static allUpdatePacks(): PlayerDto[];
     splitPlayer(): void;
+    rejoinPlayer(sprite: EntitySprite): void;
     destroySprite(p: EntitySprite): void;
     respawn(): void;
     getUpdatePack(): {

@@ -11,6 +11,8 @@ export interface EntitySprite {
     mass: number;
     id: string;
     parentId: string;
+    splitTime: number;
+    splitParentId: string;
 }
 export declare class Entity {
     static initPack: {
@@ -27,7 +29,7 @@ export declare class Entity {
     id: string;
     maxSpd: number;
     constructor(params: any);
-    createSprite(pid: string, x?: number, y?: number, mass?: number, radius?: number, curSpd?: number): EntitySprite;
+    createSprite(pid: string, x?: number, y?: number, mass?: number, curSpd?: number): EntitySprite;
     update(): void;
     updatePosition(): void;
     dirTowards(srcX: number, srcY: number, tarX: number, tarY: number): {
@@ -35,6 +37,15 @@ export declare class Entity {
         y: number;
     };
     getDistanceFromAll(x: number, y: number): number[];
+    /**
+     * Finds the coordinates for the center of all this players sprites
+     * @function getSpriteCenter
+     * @return { x: number, y: number }
+     */
+    getSpriteCenter(): {
+        x: number;
+        y: number;
+    };
     getDistance(sprite: EntitySprite, x: number, y: number): number;
     getMass(): number;
 }

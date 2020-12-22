@@ -9,7 +9,15 @@ To setup the environment you will first need to install the node dependencies
 npm i
 ```
 
-Now everything should be ready to go. In the server folder type
+Then create a file in the root project directory named '.env' and enter the following:
+```
+DB_PATH=mongodb+srv://user:pass@host.azure.mongodb.net/dbName
+PORT=5000
+```
+
+You will need to create your own [MongoDB](https://www.mongodb.com/) instance, as the one above is just an example.
+
+Now everything should be ready to go. Type:
 ```
 npm run build
 ```

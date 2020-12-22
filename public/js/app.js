@@ -12,8 +12,8 @@ window.onload = function() {
 
     // Initialize pixi app
     app = new PIXI.Application({
-        width: 1200,
-        height: 1000,
+        width: 1000,
+        height: 800,
         autoResize: true,
         backgroundColor: 0xFFFFFF
     });

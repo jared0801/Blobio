@@ -9,13 +9,10 @@ To setup the environment you will first need to install the node dependencies
 npm i
 ```
 
-Then create a file in the root project directory named '.env' and enter the following:
+By default the project will run on port 5000, to change this you can create a file in the root directory named '.env.' and enter a custom port like this:
 ```
-DB_PATH=mongodb+srv://user:pass@host.azure.mongodb.net/dbName
-PORT=5000
+PORT=3000
 ```
-
-You will need to create your own [MongoDB](https://www.mongodb.com/) instance, as the one above is just an example.
 
 Now everything should be ready to go. Type:
 ```

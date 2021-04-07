@@ -12,7 +12,7 @@ export function connectIO(server: Server) {
     
 
         socket.on('signIn', data => {
-            // Validate name
+            // Check if username is currently taken
             let valid = true;
             Player.list.forEach((p: Player) => {
                 if(data.name === p.name) {
@@ -20,6 +20,8 @@ export function connectIO(server: Server) {
                     socket.emit('signInResponse', { success: false })
                 }
             });
+
+            // Connect new user & send init game data
             if(valid) {
                 Player.onConnect(data.name, socket);
                 socket.emit('init', {
@@ -27,16 +29,16 @@ export function connectIO(server: Server) {
                     food: Food.allInitPacks(),
                     enemy: Enemy.allInitPacks()
                 });
-                //console.log(Enemy.allInitPacks()[0].sprites);
                 socket.emit('signInResponse', { success: true });
             }
         });
     
+        // Disconnect player
         socket.on('disconnect', () => {
             Player.onDisconnect(socket);
-            //io.sockets.emit('remove', { id: socket.id });
         });
     
+        // Send chat message to all players
         socket.on('sendMsgToServer', data => {
             let player = Player.list.get(socket.id);
             if(player) {

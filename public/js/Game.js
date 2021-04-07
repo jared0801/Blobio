@@ -2,12 +2,6 @@ import { Player } from './models/Player.js';
 import { Food } from './models/Food.js';
 import { UI } from './UI.js';
 
-
-// Key codes
-let KeyCodes = {
-    'space': 32,
-}
-
 export class Game {
     constructor(pixiApp) {
         this.socket = io();
@@ -57,17 +51,16 @@ export class Game {
             for(let i = 0; i < data.player.length; i++) {
                 const pack = data.player[i];
                 let player = Player.list[pack.id];
-                console.log(player);
+                //console.log(player);
                 if(player) {
                     player.update(pack);
-                    // Adjust camera scale when player gets larger
-                    let largest = 0;
-                    pack.sprites.forEach(sprite => {
-                        if(sprite.radius > largest) largest = sprite.radius;
-                    })
-                    if(pack.id === this.socket.id && largest > 256) {
-                        this.app.stage.scale.x = Math.max(0.2, 1 / (1.5*Math.log10(largest/32)));
-                        this.app.stage.scale.y = Math.max(0.2, 1 / (1.5*Math.log10(largest/32)));
+                    if(pack.id === this.socket.id && player.mass > 1200) {
+                        const val = Math.min(1, 1-(0.2*Math.log10(player.mass-1200)));
+                        this.app.stage.scale.set(val, val);
+                    }
+                    if(pack.id === this.socket.id && player.mass > 120) {
+                        const val = Math.min(1, 1-(0.1*Math.log10(player.mass-120)))
+                        this.app.stage.scale.set(val, val);
                     }
                 }
             }
@@ -97,8 +90,6 @@ export class Game {
                     this.ui.moveScore(scoreX, scoreY);
 
                     const score = Player.list[this.socket.id].mass;
-                    //this.scoreCage.scoreText.text = 'Mass: ' + score;
-                    //this.scoreCage.scoreBg.width = this.scoreCage.scoreText.width;
                     this.ui.changeScore('Mass: ' + score);
 
                     // Center camera on current player
@@ -145,10 +136,11 @@ export class Game {
 
         // Watch for space key press to allow player to attempt splitting apart
         document.body.onkeyup = e => {
-            if(e.keyCode == KeyCodes['space']) {
+            console.log(e.key);
+            if(e.key === ' ') {
                 this.socket.emit('space');
             }
-            if(e.keyCode == 49) {
+            if(e.key == '1') {
                 this.socket.emit('grow');
             }
         }

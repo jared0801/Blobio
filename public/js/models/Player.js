@@ -74,8 +74,7 @@ export class Player {
                 }
                 if(p.radius !== undefined) {
                     p.radius = packData.radius;
-                    p.scale.x = p.radius / 32;
-                    p.scale.y = p.radius / 32;
+                    p.scale.set(p.radius / 32, p.radius / 32);
                 }
                 if(p.mass !== undefined) {
                     p.mass = packData.mass;

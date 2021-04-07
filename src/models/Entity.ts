@@ -1,9 +1,11 @@
 import { PlayerDto } from "./Player";
 import { FoodDto } from "./Food";
 import { EnemyDto } from "./Enemy";
+import { Config } from '../config';
+let config: Config = require("../config.json");
 
-const MAP_W = 4008;
-const MAP_H = 4008;
+//const config.MAP_W = 8008;
+//const config.MAP_H = 8008;
 
 export interface EntitySprite {
     x: number,
@@ -25,9 +27,7 @@ export class Entity {
         food: [] as FoodDto[],
         enemy: [] as EnemyDto[]
     };
-    static removePack = { player: [] as string[], food: [] as string[], enemy: [] as string[] };
-    //x: number;
-    //y: number;
+    static removePack = { player: [] as string[], food: [] as string[], enemy: [] as string[] };  
     sprites: EntitySprite[];
     id: string;
     maxSpd: number;
@@ -61,6 +61,10 @@ export class Entity {
         }
     }
 
+    protected calculateSpeed(mass: number): number {
+        return this.maxSpd - 3*Math.log10(mass);
+    }
+
     update() {
         this.updatePosition();
     }
@@ -68,14 +72,23 @@ export class Entity {
     updatePosition(): void {
         this.sprites.forEach(sprite => {
             sprite.x += sprite.dirX * sprite.curSpd;
-            if(sprite.x > MAP_W) sprite.x = MAP_W;
+            if(sprite.x > config.MAP_W) sprite.x = config.MAP_W;
             if(sprite.x < 0) sprite.x = 0;
 
             sprite.y += sprite.dirY * sprite.curSpd;
-            if(sprite.y > MAP_H) sprite.y = MAP_H;
+            if(sprite.y > config.MAP_H) sprite.y = config.MAP_H;
             if(sprite.y < 0) sprite.y = 0;
 
-            sprite.radius = 31 + sprite.mass;
+            sprite.radius = 31 + (sprite.mass / 4);
+            if(this.sprites.length > 1) {
+                if(sprite.radius > 500) {
+                    sprite.radius = 500;
+                }
+            } else {
+                if(sprite.radius > 600) {
+                    sprite.radius = 600;
+                }
+            }
         });
     }
 
@@ -129,5 +142,15 @@ export class Entity {
             totalMass += sprite.mass;
         });
         return totalMass;
+    }
+
+    getLargestSprite(): EntitySprite {
+        let largest: EntitySprite = this.sprites[0];
+
+        this.sprites.forEach(p => {
+            if(p.mass >= largest.mass) largest = p;
+        });
+
+        return largest;
     }
 }

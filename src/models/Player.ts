@@ -1,9 +1,8 @@
 import { Entity, EntitySprite } from './Entity';
 import { Enemy } from './Enemy';
 import { Socket } from 'socket.io';
-
-const MAP_W = 4008;
-const MAP_H = 4008;
+import { Config } from '../config';
+let config: Config = require("../config.json");
 /**
  * Class representing player
  * @class
@@ -28,8 +27,8 @@ export class Player extends Entity {
         const newPlayer: Player = new Player({
             socket,
             name,
-            x: Math.random() * MAP_W,
-            y: Math.random() * MAP_H
+            x: Math.random() * config.MAP_W,
+            y: Math.random() * config.MAP_H
         });
         
         newPlayer.socket.on('mouseMove', (data: { x: number; y: number; }) => {
@@ -98,14 +97,9 @@ export class Player extends Entity {
     }
 
     splitPlayer() {
-        //if(p.mass < 20) return;
 
-        let largest: EntitySprite = this.createSprite(this.id);
-        largest.mass = 0;
-
-        this.sprites.forEach(p => {
-            if(p.mass >= largest.mass) largest = p;
-        });
+        let largest: EntitySprite = this.getLargestSprite();
+        if(largest.mass < 20) return;
 
         const x = largest.x + largest.dirX * Math.random() * 50 + 10;
         const y = largest.y + largest.dirY * Math.random() * 50 + 10;
@@ -119,7 +113,7 @@ export class Player extends Entity {
         const newOne: EntitySprite = this.createSprite(this.id, x, y, mass, curSpd);
 
         // Reset split timer
-        newOne.splitTime = 1000;
+        newOne.splitTime = Math.random() * 1000 + 1000;
         newOne.splitParentId = largest.id;
 
         this.sprites.push(newOne);
@@ -127,11 +121,12 @@ export class Player extends Entity {
     }
 
     rejoinPlayer(sprite: EntitySprite) {
-        let parent = this.sprites.filter(spr => spr.id === sprite.id)[0];
-
-        parent.mass += sprite.mass;
-
+        //let parent = this.sprites.filter(spr => spr.id === sprite.splitParentId)[0];
+        let mass = sprite.mass;
         this.destroySprite(sprite);
+        let largest = this.getLargestSprite();
+
+        largest.mass += mass;
         
     }
 
@@ -144,8 +139,8 @@ export class Player extends Entity {
     respawn() {
         const sprite = super.createSprite(
             this.id,
-            Math.random() * MAP_W,
-            Math.random() * MAP_H
+            Math.random() * config.MAP_W,
+            Math.random() * config.MAP_H
         )
         this.sprites.push(sprite);
     }
@@ -163,10 +158,6 @@ export class Player extends Entity {
             sprites: this.sprites,
             name: this.name
         }
-    }
-
-    private calculateSpeed(mass: number): number {
-        return this.maxSpd - 3*Math.log10(mass);
     }
 
     
@@ -214,7 +205,7 @@ export class Player extends Entity {
 
             if(sprite.splitParentId !== '') {
                 if(sprite.splitTime > 0) sprite.splitTime--;
-                if(sprite.splitTime === 0) {
+                if(sprite.splitTime <= 0) {
                     this.rejoinPlayer(sprite);
                 }
             }

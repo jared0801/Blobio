@@ -3,9 +3,8 @@ import { Player } from './Player';
 import { Food } from './Food';
 import path from 'path';
 import fs from 'fs';
-
-const MAP_W = 4008;
-const MAP_H = 4008;
+import { Config } from '../config';
+let config: Config = require("../config.json");
 
 let text = fs.readFileSync(path.join(__dirname, "../../names.txt"), "utf-8");
 let botNames = text.split("\n");
@@ -43,8 +42,8 @@ export class Enemy extends Entity {
 
     static onConnect() {
         new Enemy({
-            x: Math.random() * MAP_W,
-            y: Math.random() * MAP_H
+            x: Math.random() * config.MAP_W,
+            y: Math.random() * config.MAP_H
         });
         
     }
@@ -116,27 +115,18 @@ export class Enemy extends Entity {
         }
     }
 
-    private calculateSpeed(mass: number): number {
-        return this.maxSpd - Math.log10(mass);
-    }
-
     rejoinPlayer(sprite: EntitySprite) { 
-        let parent = this.sprites.filter(spr => spr.id === sprite.id)[0];
-
-        parent.mass += sprite.mass;
-
+        let mass = sprite.mass;
         this.destroySprite(sprite);
+        let largest = this.getLargestSprite();
+
+        largest.mass += mass;
         
     }
 
     splitPlayer() {
 
-        let largest: EntitySprite = this.createSprite(this.id);
-        largest.mass = 0;
-
-        this.sprites.forEach(p => {
-            if(p.mass >= largest.mass) largest = p;
-        });
+        let largest: EntitySprite = this.getLargestSprite();
 
         if(largest.mass < 20) return;
 
@@ -293,7 +283,7 @@ export class Enemy extends Entity {
             }
 
             
-            if(sprite.splitParentId !== '') {
+            if(sprite.splitParentId !== '' && this.sprites.length > 1) {
                 if(sprite.splitTime > 0) sprite.splitTime--;
                 if(sprite.splitTime === 0) {
                     this.rejoinPlayer(sprite);
@@ -321,7 +311,7 @@ export class Enemy extends Entity {
         if(Math.random() < 0.005) {
             this.wandering = 200;
         }
-        if(this.sprites.length < 5 && Math.random() < 0.001) {
+        if(this.sprites.length < 5 && this.sprites.length > 0 && Math.random() < 0.001) {
             this.splitPlayer();
         }
         super.update();

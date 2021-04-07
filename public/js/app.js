@@ -1,7 +1,7 @@
 import { Game } from './Game.js';
+import {default as config} from './config.js';
 let gameDiv = document.getElementById('gameDiv');
 let app;
-
 window.onload = function() {
     // Check whether webgl is supported
     let type = "WebGL"
@@ -36,7 +36,7 @@ window.onload = function() {
     app.loader.onError.add(reportError);
 
     const bgTexture = new PIXI.Texture(PIXI.Texture.from('/img/map1.png'),
-                      new PIXI.Rectangle(0, 0, 4008, 4008));
+                      new PIXI.Rectangle(0, 0, config.MAP_W, config.MAP_H));
     const bg = new PIXI.Sprite(bgTexture);
     bg.anchor.x = 0;
     bg.anchor.y = 0;

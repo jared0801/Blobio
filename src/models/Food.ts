@@ -1,9 +1,8 @@
 import { Entity, EntitySprite } from './Entity';
 import { Player } from './Player';
 import { Enemy } from './Enemy';
-
-const MAP_W = 4008;
-const MAP_H = 4008;
+import { Config } from '../config';
+let config: Config = require("../config.json");
 
 export class Food extends Entity {
     static list: Map<string, Food> = new Map();
@@ -38,7 +37,7 @@ export class Food extends Entity {
     }
 
     static spawnRandomFood() {
-        new Food({x: Math.floor(Math.random() * MAP_W), y: Math.floor(Math.random() * MAP_H)});
+        new Food({x: Math.floor(Math.random() * config.MAP_W), y: Math.floor(Math.random() * config.MAP_H)});
     }
 
     getInitPack() {

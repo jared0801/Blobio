@@ -79,7 +79,7 @@ export class Entity {
             if(sprite.y > config.MAP_H) sprite.y = config.MAP_H;
             if(sprite.y < 0) sprite.y = 0;
 
-            sprite.radius = 31 + (sprite.mass / 4);
+            sprite.radius = 31 + (sprite.mass / 2);
             if(this.sprites.length > 1) {
                 if(sprite.radius > 500) {
                     sprite.radius = 500;

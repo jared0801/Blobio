@@ -161,7 +161,10 @@ export class Enemy extends Entity {
 
         // Decision loop (all sprites help make decision)
         this.sprites.forEach(sprite => {
+            // Find speed based on mass
             sprite.curSpd = this.calculateSpeed(sprite.mass);
+
+
             Player.list.forEach((player: Player) => {
                 player.sprites.forEach(pSprite => {
                     if(this.getDistance(sprite, pSprite.x, pSprite.y) < pSprite.radius + sprite.radius) {
@@ -271,12 +274,6 @@ export class Enemy extends Entity {
 
             }
 
-            this.sprites.forEach(sprite => {
-                if(sprite.mass > 50 && Math.random() < 0.01) {
-                    this.splitPlayer();
-                }
-            });
-
             if(this.getDistance(sprite, this.getSpriteCenter().x, this.getSpriteCenter().y) > sprite.radius * 3) {
                 target.x = this.getSpriteCenter().x;
                 target.y = this.getSpriteCenter().y;
@@ -303,6 +300,15 @@ export class Enemy extends Entity {
                 sprite.dirX = dir.x;
                 sprite.dirY = dir.y;
             }
+
+            const splitProb = Math.random();
+            if(sprite.mass > 20 &&
+               (sprite.mass < 30 && splitProb < 0.0001) ||
+               (sprite.mass < 100 && splitProb < 0.001) ||
+               (sprite.mass < 500 && splitProb < 0.01) ||
+               splitProb < 0.1) {
+                this.splitPlayer();
+            }
         });
 
 
@@ -311,7 +317,7 @@ export class Enemy extends Entity {
         if(Math.random() < 0.005) {
             this.wandering = 200;
         }
-        if(this.sprites.length < 5 && this.sprites.length > 0 && Math.random() < 0.001) {
+        if(this.sprites.length < 5 && this.sprites.length > 0 && Math.random() < 0.0001) {
             this.splitPlayer();
         }
         super.update();

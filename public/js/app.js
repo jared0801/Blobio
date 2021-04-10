@@ -13,11 +13,12 @@ window.onload = function() {
     // Initialize pixi app
     app = new PIXI.Application({
         width: 1000,
-        height: 800,
+        height: 750,
         autoResize: true,
         backgroundColor: 0xFFFFFF
     });
     app.view.id = "canvas";
+    app.view.tabIndex = 1;
     app.view.style = 'position: relative';
     gameDiv.prepend(app.view);
     

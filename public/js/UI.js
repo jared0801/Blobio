@@ -54,6 +54,7 @@ export class UI {
             if(data.success) {
                 signInDiv.style.display = 'none';
                 gameDiv.style.opacity = '1';
+                document.getElementById('canvas').focus();
             } else {
                 alert('That name is currently taken. Try another one!');
             }

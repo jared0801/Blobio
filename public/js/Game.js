@@ -54,13 +54,14 @@ export class Game {
                 //console.log(player);
                 if(player) {
                     player.update(pack);
-                    if(pack.id === this.socket.id && player.mass > 1200) {
-                        const val = Math.min(1, 1-(0.2*Math.log10(player.mass-1200)));
-                        this.app.stage.scale.set(val, val);
-                    }
                     if(pack.id === this.socket.id && player.mass > 120) {
-                        const val = Math.min(1, 1-(0.1*Math.log10(player.mass-120)))
-                        this.app.stage.scale.set(val, val);
+                        this.app.stage.scale.set(0.8, 0.8);
+                    }
+                    if(pack.id === this.socket.id && player.mass > 480) {
+                        this.app.stage.scale.set(0.6, 0.6);
+                    }
+                    if(pack.id === this.socket.id && player.mass > 960) {
+                        this.app.stage.scale.set(0.5, 0.5);
                     }
                 }
             }
@@ -135,13 +136,19 @@ export class Game {
         }
 
         // Watch for space key press to allow player to attempt splitting apart
-        document.body.onkeyup = e => {
-            console.log(e.key);
+        document.getElementById('canvas').onkeyup = e => {
             if(e.key === ' ') {
                 this.socket.emit('space');
             }
             if(e.key == '1') {
                 this.socket.emit('grow');
+            }
+        }
+
+        // Prevent scrolling when canvas is targetted
+        document.getElementById('canvas').onkeydown = e => {
+            if(e.key === ' ') {
+                e.preventDefault();
             }
         }
     }

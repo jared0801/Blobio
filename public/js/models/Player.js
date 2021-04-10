@@ -74,7 +74,7 @@ export class Player {
                 }
                 if(p.radius !== undefined) {
                     p.radius = packData.radius;
-                    p.scale.set(p.radius / 32, p.radius / 32);
+                    gsap.to(p.scale, {x: p.radius/32, y: p.radius/32});
                 }
                 if(p.mass !== undefined) {
                     p.mass = packData.mass;
@@ -86,7 +86,7 @@ export class Player {
         let removed_sprites = this.sprites.filter(s => !updated_sprites.includes(s.id));
 
         removed_sprites.forEach(s => {
-            this.removeSprite(s)
+            this.removeSprite(s);
         });
         this.mass = newMass;
     }
